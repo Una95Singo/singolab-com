@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Not found — singolab</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230F0E0B'/><path d='M3 16h4l2.5-8 3 15 3-11 2 6h11.5' fill='none' stroke='%234272FF' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400..500&family=Newsreader:opsz,wght@6..72,400..500&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{ --serif:"Newsreader",Georgia,serif; --body:"Literata",Georgia,serif; --mono:"Spline Sans Mono",monospace;
+    --paper:#FAF7F2; --ink:#2A2622; --ink-2:#5A544C; --ink-3:#948C81; --line-2:rgba(42,38,34,.2); --accent:#2F5BDB; }
+  html[data-theme="dark"]{ --paper:#15120E; --ink:#F1EBE0; --ink-2:#BEB4A5; --ink-3:#8A8073; --line-2:rgba(241,235,224,.2); --accent:#7AA0FF; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; min-height:100vh; background:var(--paper); color:var(--ink); font-family:var(--body);
+    display:flex; align-items:center; justify-content:center; text-align:center; padding:24px; }
+  .kick{ font-family:var(--mono); font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--accent); }
+  h1{ font-family:var(--serif); font-weight:500; font-size:clamp(64px,16vw,150px); letter-spacing:-.03em; margin:14px 0 0; line-height:.9; }
+  p{ font-family:var(--serif); font-size:clamp(18px,2.4vw,23px); color:var(--ink-2); margin:18px 0 30px; }
+  a.home{ font-family:var(--mono); font-size:13px; letter-spacing:.04em; color:var(--ink-2); border:1px solid var(--line-2); border-radius:100px; padding:11px 20px; text-decoration:none; transition:.2s; }
+  a.home:hover{ color:var(--ink); border-color:var(--accent); }
+</style>
+</head>
+<body>
+  <main>
+    <div class="kick">// signal lost — Nº 404</div>
+    <h1>404</h1>
+    <p>This page didn't resolve into anything.</p>
+    <a class="home" href="/">← back to singolab</a>
+  </main>
+  <script>
+    (function(){ var s=localStorage.getItem('singolab-theme'); var d=matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', s || (d?'dark':'light')); })();
+  </script>
+</body>
+</html>
