@@ -33,7 +33,8 @@ export function initSignal(
     H = 0,
     DPR = 1,
     cx = 0,
-    cy = 0;
+    cy = 0,
+    fscale = 1;
   let flat: Pt[] = [];
   let targets: Record<Mode, Pt[]> = {} as Record<Mode, Pt[]>;
   let mode: Mode = 'portrait';
@@ -59,8 +60,8 @@ export function initSignal(
     return pts;
   }
   function lissajous(): Pt[] {
-    const Rx = Math.min(W * 0.16, 240),
-      Ry = Math.min(H * 0.3, 220),
+    const Rx = Math.min(W * 0.16, 240) * fscale,
+      Ry = Math.min(H * 0.3, 220) * fscale,
       a = 3,
       b = 2,
       d = Math.PI / 2,
@@ -121,7 +122,7 @@ export function initSignal(
     [0.53, 1.06],
   ];
   function portrait(): Pt[] {
-    const bh = Math.min(H * 0.66, 440),
+    const bh = Math.min(H * 0.66, 440) * fscale,
       bw = bh * 0.78;
     return spline(PK, N, bw, bh);
   }
@@ -183,7 +184,7 @@ export function initSignal(
   ];
   function skyline(): Pt[] {
     const base = cy + Math.min(H * 0.18, 120),
-      span = Math.min(H * 0.52, 410),
+      span = Math.min(H * 0.52, 410) * fscale,
       pts: Pt[] = new Array(N);
     let seg = 0;
     for (let i = 0; i < N; i++) {
@@ -211,8 +212,13 @@ export function initSignal(
     canvas.width = W * DPR;
     canvas.height = H * DPR;
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    cx = W * (opts.cxFactor || 0.8);
-    cy = H * 0.52;
+    // On narrow (single-column) screens the hero text is top-aligned, so shrink
+    // the figure and drop it into the lower half, centred horizontally, to keep
+    // it clear of the words. Wider screens keep the original composition.
+    const narrow = W < 700;
+    fscale = narrow ? 0.6 : 1;
+    cx = W * (opts.cxFactor ?? (narrow ? 0.5 : 0.8));
+    cy = H * (narrow ? 0.68 : 0.52);
     flat = flatWave();
     targets = {
       lissajous: lissajous(),

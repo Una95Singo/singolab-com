@@ -205,7 +205,7 @@ nav.links a.nav-item:hover::after {
     flex-direction: column;
     align-items: stretch;
     gap: 0;
-    background: color-mix(in srgb, var(--paper) 96%, transparent);
+    background: color-mix(in srgb, var(--paper) 99%, transparent);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--line);
@@ -331,6 +331,7 @@ button:focus-visible {
 .sigcap {
   position: absolute;
   left: clamp(22px, 5vw, 56px);
+  right: clamp(22px, 5vw, 56px);
   bottom: 30px;
   z-index: 2;
   display: flex;
@@ -359,6 +360,22 @@ button:focus-visible {
 .sigcap button:hover {
   color: var(--ink);
   border-color: var(--ink-3);
+}
+
+/* On phones the signal would otherwise draw straight through the hero text.
+   Top-align the copy and give it room; signal.ts shrinks the figure and drops
+   it into the lower half at this width, so it sits clear of the words. The
+   slight fade keeps it as a backdrop rather than competing with the text. */
+@media (max-width: 700px) {
+  .hero {
+    align-items: flex-start;
+  }
+  .hero-in {
+    padding-top: 96px;
+  }
+  #signal {
+    opacity: 0.45;
+  }
 }
 
 /* ---------- section scaffolding ---------- */
@@ -402,6 +419,16 @@ section.alt {
   text-transform: none;
   color: var(--ink-2);
   line-height: 1.4;
+}
+/* Single column (≤760px): the kicker stacks above the content, so unstick it —
+   otherwise it sticks at top:96px and overlaps the posts/cards as they scroll.
+   Placed after the base rule above so it wins the cascade. */
+@media (max-width: 760px) {
+  .sec-kick {
+    position: static;
+    top: auto;
+    margin-bottom: 18px;
+  }
 }
 .sec-title {
   font-family: var(--serif);
@@ -978,20 +1005,21 @@ footer.site {
   margin-top: 26px;
   font-family: var(--mono);
   font-size: 12.5px;
+  line-height: 1.7;
   letter-spacing: 0.01em;
   color: var(--ink-3);
-  display: flex;
-  align-items: center;
-  gap: 11px;
+  max-width: 540px;
 }
 .hero-now .dot {
+  display: inline-block;
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--warm);
   box-shadow: 0 0 12px var(--warm);
   animation: blink 1.6s steps(1) infinite;
-  flex: none;
+  margin-right: 10px;
+  vertical-align: middle;
 }
 .hero-now a {
   color: var(--accent);
