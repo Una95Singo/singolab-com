@@ -30,6 +30,9 @@ export default function Footer() {
           <a href={LINKS.appleMusic} target="_blank" rel="noopener">
             Rx Sneakers <span className="ar">↗</span>
           </a>
+          <a href={LINKS.soundcloud} target="_blank" rel="noopener">
+            SoundCloud <span className="ar">↗</span>
+          </a>
         </div>
         <hr className="rule" style={{ marginBottom: 24 }} />
         <div className="colophon">

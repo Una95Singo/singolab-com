@@ -17,40 +17,40 @@ export default function Projects() {
                 <span className="pill">
                   <span className="blip" /> in progress
                 </span>
-                <span className="feature-label">A TOY LANGUAGE MODEL</span>
+                <span className="feature-label">A SERIES, BUILT IN PUBLIC</span>
               </div>
-              <h3>Otis</h3>
+              <h3>Learning AI Out Loud</h3>
               <p className="desc">
-                A small language model learning to write the blues — built post by
-                post, from tokenizer to transformer, trained on a corpus of
-                lyrics. The point isn&apos;t the model. It&apos;s understanding
-                every line of it.
+                Building language models from scratch and explaining them out
+                loud — from tokens to transformers, one episode at a time. Each
+                idea gets the simplest version that works, plus a demo you can
+                click through. The point isn&apos;t the models. It&apos;s
+                understanding every line of them.
               </p>
               <div className="tags">
                 <span className="tag">Python</span>
-                <span className="tag">PyTorch</span>
-                <span className="tag">nanoGPT</span>
-                <span className="tag">Modal</span>
-                <span className="tag">Weights &amp; Biases</span>
+                <span className="tag">JavaScript</span>
+                <span className="tag">Canvas</span>
+                <span className="tag">Substack</span>
               </div>
             </div>
             <div className="fside">
-              <div className="otis-head">otis · sample @ epoch 40</div>
-              <div className="otis-term">
+              <div className="codeterm-head">the build · from scratch</div>
+              <div className="codeterm">
                 <div>
-                  <span className="pr">otis&gt;</span>woke up this mornin&apos;
+                  <span className="pr">→</span>tokens
                 </div>
                 <div>
-                  <span className="pr" />
-                  the wifi wouldn&apos;t load
+                  <span className="pr">→</span>probability
                 </div>
                 <div>
-                  <span className="pr" />
-                  my model&apos;s still trainin&apos;
+                  <span className="pr">→</span>bigrams &amp; n-grams
                 </div>
                 <div>
-                  <span className="pr" />
-                  down a gradient road
+                  <span className="pr">→</span>attention
+                </div>
+                <div>
+                  <span className="pr">→</span>transformers
                   <span className="cur" />
                 </div>
               </div>
@@ -74,24 +74,20 @@ export default function Projects() {
                 <span className="tag">parametric</span>
               </div>
             </a>
-            <a
-              className="xcard reveal"
-              href={LINKS.substack}
-              target="_blank"
-              rel="noopener"
-            >
+            <a className="xcard reveal" href="#writing">
               <div className="xtop">
-                <h4>Fieldbook</h4>
+                <h4>The demos</h4>
                 <span className="xstatus">tinkering</span>
               </div>
               <p>
-                A little tool that turns my reading notes into spaced-repetition
-                cards, so the things I learn out loud actually stick.
+                Small interactive toys that ship with the writing — assemble a
+                model one step at a time and watch it work, then watch it break.
+                Built to be clicked, not just read.
               </p>
               <div className="tags">
-                <span className="tag">TypeScript</span>
-                <span className="tag">SQLite</span>
-                <span className="tag">local-first</span>
+                <span className="tag">HTML</span>
+                <span className="tag">Canvas</span>
+                <span className="tag">JavaScript</span>
               </div>
             </a>
           </div>

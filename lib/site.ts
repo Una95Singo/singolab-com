@@ -8,4 +8,5 @@ export const LINKS = {
   github: 'https://github.com/Una95Singo',
   substack: 'https://usingo.substack.com',
   appleMusic: 'https://music.apple.com/us/album/sex-rap/1885221086',
+  soundcloud: 'https://soundcloud.com/una-singo',
 } as const;

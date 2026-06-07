@@ -9,15 +9,16 @@ export default function Now() {
         </div>
         <div className="now-card reveal">
           <div className="now-date">
-            <span className="dot" /> Updated May 2026 · New York
+            <span className="dot" /> Updated Jun 2026 · New York
           </div>
           <p>
-            Building <b>Otis</b>, slowly and on purpose. This month: a cleaner
-            tokenizer for blues lyrics, and finally understanding attention well
-            enough to explain it to a friend.{' '}
+            Writing <b>Learning AI Out Loud</b>, slowly and on purpose. This
+            month: finishing the next episode — building a small language model
+            from scratch, by hand, to show what actually happens when a machine
+            predicts the next word.{' '}
             <span className="soft">
-              Reading about retrieval, writing every week, and playing more bass
-              than I have in years.
+              Reading about attention, shipping small interactive demos, and
+              playing more bass than I have in years.
             </span>
           </p>
         </div>

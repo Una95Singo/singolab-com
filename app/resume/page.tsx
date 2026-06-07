@@ -1,15 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import PrintButton from '../components/PrintButton';
 import { EMAIL, LINKS } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Unarine Singo — Résumé',
   description:
-    'Résumé — Unarine “Una” Singo, advisor and builder re-skilling into AI engineering.',
+    'Résumé — Unarine “Una” Singo, strategy & technology consultant re-skilling into AI engineering.',
   alternates: { canonical: '/resume' },
 };
 
+// Deliberately a LinkedIn-level public version — no phone, no personal email,
+// no confidential client details. The full CV is available on request.
 export default function Resume() {
   return (
     <div className="resume">
@@ -19,21 +20,26 @@ export default function Resume() {
             ← singolab
           </Link>
           <div className="actions">
-            <PrintButton />
             <a className="btn" href={`mailto:${EMAIL}`}>
               Email
+            </a>
+            <a className="btn" href={LINKS.linkedin} target="_blank" rel="noopener">
+              LinkedIn ↗
             </a>
           </div>
         </div>
 
         <div className="head">
-          {/* Draft — Experience entries are PLACEHOLDERS (see handoff). */}
-          <div className="draftnote">Draft — swap in your real details</div>
           <h1>Unarine Singo</h1>
           <p className="role">
-            Advisor and builder working at the intersection of consulting,
-            technology, and energy — currently re-skilling into a forward-deployed
-            AI engineer, and writing about all of it in public.
+            Strategy and technology consultant — currently a Project Leader at the
+            Boston Consulting Group in New York, with a background in data science
+            and statistical finance. Re-skilling into AI engineering, and writing
+            about it in public.
+          </p>
+          <p className="shortnote">
+            The short version. For the full CV,{' '}
+            <a href={`mailto:${EMAIL}`}>just ask</a>.
           </p>
         </div>
 
@@ -68,20 +74,20 @@ export default function Resume() {
               <h3>Focus</h3>
               <div className="chips">
                 <span className="chip">AI / ML</span>
-                <span className="chip">Strategy</span>
-                <span className="chip">Energy</span>
-                <span className="chip">Digital</span>
+                <span className="chip">Strategy &amp; Tech</span>
+                <span className="chip">Energy &amp; Utilities</span>
                 <span className="chip">Data Science</span>
+                <span className="chip">Statistical Finance</span>
               </div>
             </div>
             <div className="rail">
               <h3>Tools</h3>
               <div className="chips">
                 <span className="chip">Python</span>
-                <span className="chip">PyTorch</span>
+                <span className="chip">R</span>
                 <span className="chip">SQL</span>
-                <span className="chip">TypeScript</span>
-                <span className="chip">Modal</span>
+                <span className="chip">Alteryx</span>
+                <span className="chip">Tableau</span>
               </div>
             </div>
             <div className="rail">
@@ -89,6 +95,7 @@ export default function Resume() {
               <ul>
                 <li>Bass — Rx Sneakers</li>
                 <li>Mandela Rhodes Scholar</li>
+                <li>Allan Gray Orbis Fellow</li>
                 <li>Based in New York</li>
               </ul>
             </div>
@@ -98,10 +105,9 @@ export default function Resume() {
             <section className="blk">
               <h2>Summary</h2>
               <p className="lead">
-                A strategist learning to build. I spend my days advising on
-                technology, digital, and energy, and my nights teaching myself to
-                ship with AI — small models, real tools, and a Substack that
-                documents the whole messy process.
+                A consultant who builds. By day I lead strategy and technology
+                work; by night I&apos;m teaching myself to ship with AI — small
+                models, real tools, and a Substack documenting the whole process.
               </p>
             </section>
 
@@ -109,45 +115,50 @@ export default function Resume() {
               <h2>Experience</h2>
               <div className="item">
                 <div className="r1">
-                  <span className="ititle">
-                    Advisor — Strategy &amp; Technology
-                  </span>
-                  <span className="when">20XX — Present</span>
+                  <span className="ititle">The Boston Consulting Group</span>
+                  <span className="when">2020 — Present</span>
                 </div>
-                <div className="org ph">[Firm] · New York</div>
+                <div className="org">Project Leader · New York &amp; Johannesburg</div>
                 <ul>
-                  <li className="ph">
-                    [Lead client work across technology, digital, and energy.]
+                  <li>
+                    Strategy, technology, and operations work for clients across
+                    utilities, energy, financial services, and private equity.
                   </li>
-                  <li className="ph">
-                    [Add a signature result — scope, impact, the number you&apos;re
-                    proud of.]
+                  <li>
+                    Progressed from Associate Consultant to Project Leader; now
+                    leading large-scale technology and AI-enabled transformation
+                    programs.
                   </li>
-                  <li className="ph">
-                    [Add a cross-functional or leadership highlight.]
+                  <li>
+                    Recipient of BCG&apos;s Global Purpose Award and a Commercial
+                    Excellence Award.
                   </li>
                 </ul>
               </div>
               <div className="item">
                 <div className="r1">
-                  <span className="ititle">[Prior role]</span>
-                  <span className="when">20XX — 20XX</span>
+                  <span className="ititle">Trinity IoT</span>
+                  <span className="when">2016 — 2019</span>
                 </div>
-                <div className="org ph">[Organisation]</div>
+                <div className="org">Data Scientist (contract)</div>
                 <ul>
-                  <li className="ph">
-                    [Two lines on what you owned and what changed because of it.]
+                  <li>
+                    Built health-monitoring algorithms for an IoT company to track
+                    edge-device performance.
                   </li>
                 </ul>
               </div>
               <div className="item">
                 <div className="r1">
-                  <span className="ititle">[Early role]</span>
-                  <span className="when">20XX — 20XX</span>
+                  <span className="ititle">Earlier</span>
+                  <span className="when">2017 — 2018</span>
                 </div>
-                <div className="org ph">[Organisation]</div>
+                <div className="org">Bain &amp; Company · Allan Gray</div>
                 <ul>
-                  <li className="ph">[One line — where it started.]</li>
+                  <li>
+                    Consulting and asset-management internships in Johannesburg and
+                    Cape Town.
+                  </li>
                 </ul>
               </div>
             </section>
@@ -157,17 +168,23 @@ export default function Resume() {
               <div className="item">
                 <div className="r1">
                   <span className="ititle">University of Cape Town</span>
-                  <span className="when">20XX</span>
+                  <span className="when">2014 — 2022</span>
                 </div>
                 <div className="org">
-                  BSc — Statistics &amp; Data Science{' '}
-                  <span className="ph">[confirm degree]</span>
+                  MSc Data Science (Statistical Finance) · BCom Hons Statistics ·
+                  BCom Statistics &amp; Economics
                 </div>
+                <ul>
+                  <li>
+                    Master&apos;s thesis: market-state discovery with unsupervised
+                    learning.
+                  </li>
+                </ul>
               </div>
               <div className="item">
                 <div className="r1">
                   <span className="ititle">Mandela Rhodes Scholarship</span>
-                  <span className="when">20XX</span>
+                  <span className="when">2019</span>
                 </div>
                 <div className="org">Scholar — leadership &amp; reconciliation</div>
               </div>
@@ -187,8 +204,8 @@ export default function Resume() {
                 </div>
                 <ul>
                   <li>
-                    Building Otis, a small language model that writes the blues —
-                    post by post.
+                    A series demystifying language models for the curious — tokens,
+                    probability, transformers, and the frontier.
                   </li>
                   <li>
                     Field notes on re-skilling from strategy into AI engineering.

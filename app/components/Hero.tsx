@@ -13,8 +13,9 @@ export default function Hero() {
           step of it with the world.
         </p>
         <div className="hero-now reveal">
-          <span className="dot" /> Currently — teaching{' '}
-          <a href="#projects">Otis</a> to write the blues, in New York.
+          <span className="dot" /> Currently — building language models from
+          scratch and <a href="#writing">explaining them out loud</a>, in New
+          York.
         </div>
       </div>
     </section>
