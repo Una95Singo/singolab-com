@@ -4,35 +4,65 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is right now
 
-A **design handoff**, not an implemented site. The repo currently contains only `design_handoff_singolab_site/` — a working HTML/CSS/vanilla-JS prototype plus a detailed spec. The job is to **recreate this design in the target stack** (below), porting the prototype's look, motion, and behavior pixel-faithfully. There is no `package.json`, build, or test setup yet — it gets created when implementation starts.
+An **implemented, working site** — Next.js 15 (App Router) + TypeScript + Tailwind, configured for **static export** (`output: 'export'` → `out/`). It was ported pixel-faithfully from the original design prototype, which still lives in `design_handoff_singolab_site/` as reference.
 
-**`design_handoff_singolab_site/README.md` is the source of truth.** It contains the full design-token table (light/dark colors, fonts, type scale, spacing), per-section copy and layout specs, the signal animation contract, interaction behaviors, accessibility requirements, deployment notes, and the list of authored placeholders to swap. Read it before doing any implementation work — this file only summarizes the architecture.
+- **`HANDOFF.md`** (repo root) is the live status + prioritized next-steps / deploy checklist. Read it first to see what's left to do.
+- **`design_handoff_singolab_site/README.md`** is the **design source of truth**: full design-token table (light/dark colors, fonts, type scale, spacing), per-section copy/layout specs, the signal animation contract, interaction and accessibility requirements. Consult it when changing look, motion, or copy.
 
 ## The site
 
 Single-page personal site for Unarine "Una" Singo. Warm-minimal editorial aesthetic. Sections: **Hero → Writing → Projects → Music → New York → Now → Footer**, plus standalone `/resume` and a 404 page. The signature element is **the signal**: a hero `<canvas>` animation that draws an audio waveform left→right, then morphs each of ~260 points into one of three line-drawings (portrait / NYC skyline / Lissajous figure), picked at random and weighted toward portrait.
 
-## Reference files (`design_handoff_singolab_site/reference/`)
+## Project structure
 
-- `index.html`, `resume.html`, `404.html` — full prototypes with inline `<style>` and `<script>`. Source of truth for layout, copy, and CSS.
-- `signal.js` — the canvas animation engine. **Port this logic closely; it's the centerpiece.** Public API: `initSignal(canvas, { onName, portraitDark?, portraitLight?, cxFactor? })` → `{ replay(), setMode(m), currentName() }`. It reads `data-theme` each frame, debounces `window.resize`, and uses a `MutationObserver` on `data-theme` to re-render on theme change. In React, wrap in a `'use client'` component and init in `useEffect`.
-- `og-image.png`, `apple-touch-icon.png`, `favicon-32.png` — production assets, ship as-is (→ `public/`).
-- `robots.txt`, `sitemap.xml` — deploy to root (→ `public/`); update domain to absolute `https://singolab.com/...`.
+```
+app/
+  layout.tsx          # fonts (next/font), metadata, JSON-LD, no-flash theme script
+  page.tsx            # home — composes the section components
+  resume/page.tsx     # /resume route (full CV)
+  not-found.tsx       # 404 page
+  globals.css         # all design tokens + dark mode + component styles + responsive
+  components/         # Masthead, Hero, HeroSignal, SignalDivider, Reveal,
+                      # Writing, Projects, Music, NewYork, Now, Footer
+lib/
+  signal.ts           # the canvas animation engine (TypeScript port of signal.js)
+  site.ts             # EMAIL + LINKS constants (single source of truth)
+public/               # og-image.png, favicons, robots.txt, sitemap.xml (absolute URLs)
+design_handoff_singolab_site/   # original prototype + design spec (reference only)
+```
 
-## Target stack (per the handoff)
+Routes: `/` (home), `/resume`, `not-found`. The signal is a `'use client'` component (`HeroSignal.tsx`) wrapping `<canvas>`; `Masthead.tsx` and `Reveal.tsx` are also client components.
 
-- **Next.js 15 (App Router) + TypeScript + Tailwind CSS.**
-- **Static export**: `next.config.js` → `{ output: 'export', images: { unoptimized: true } }`. No server runtime.
-- **Deploy: Cloudflare Pages.** Build `next build`, output dir `out`.
-- Routes: `/` (home), `/resume`, `not-found.tsx`. Build sections as components (`Hero`, `Writing`, `Projects`, `Music`, `NewYork`, `Now`, `Footer`, `Masthead`); the signal is a client component wrapping `<canvas>`.
+## Commands
+
+```
+npm install
+npm run dev      # local dev at http://localhost:3000
+npm run build    # static export → out/
+npm run lint
+```
+
+Node is via Homebrew; if `node`/`npm` aren't found, prefix with `export PATH="/opt/homebrew/bin:$PATH"`.
+
+## Deploy
+
+**Cloudflare Pages** (domain `singolab.com` already purchased there). Framework preset *Next.js (Static HTML Export)*, build command `next build`, build output directory `out`. No server runtime, no env vars. See `HANDOFF.md` for the full step-by-step.
 
 ## Architecture notes that span files
 
-- **Theming uses CSS variables, not Tailwind's `dark:` variant.** A theme toggle flips `data-theme` on `<html>` and persists to `localStorage['singolab-theme']`; on load, read saved value else fall back to `prefers-color-scheme`. All three pages (home, resume, 404) share this one key, and `signal.js` reads `data-theme` live — so keep the CSS-variable approach rather than converting to Tailwind dark-mode classes. Map tokens to `tailwind.config` theme extensions + CSS variables.
-- **All motion is gated behind `prefers-reduced-motion: reduce`** (disable reveals and the signal animation, render end-states immediately). Honor this everywhere.
-- **Fonts** (Newsreader / Literata / Spline Sans Mono) load from Google/Fontshare in the prototype — self-host via `next/font` for production, keep `display: swap`.
+- **The signal** (`lib/signal.ts`). Public API: `initSignal(canvas, { onName, portraitDark?, portraitLight?, cxFactor? })` → `{ replay(), setMode(m), currentName(), destroy() }`. It reads `data-theme` each frame, debounces `window.resize`, and uses a `MutationObserver` on `data-theme` to re-render on theme change. Initialized in `HeroSignal.tsx`'s `useEffect` with `destroy()` cleanup. It's the centerpiece — change it carefully and re-test both themes.
+- **Theming uses CSS variables, not Tailwind's `dark:` variant.** The theme toggle (`Masthead.tsx`) flips `data-theme` on `<html>` and persists to `localStorage['singolab-theme']`; a no-flash script in `layout.tsx` sets it before paint, reading the saved value else falling back to `prefers-color-scheme`. All three pages share this one key, and `signal.ts` reads `data-theme` live — keep the CSS-variable approach rather than converting to Tailwind dark-mode classes. Tokens are mapped in `tailwind.config.ts` via `var()`.
+- **All motion is gated behind `prefers-reduced-motion: reduce`** (reveals disabled, signal renders its end-state immediately). Honor this everywhere.
+- **Fonts** (Newsreader / Literata / Spline Sans Mono) are self-hosted via `next/font` with `display: swap` — no external font requests at runtime.
 - Decorative canvas, grid, divider, and icon SVGs are `aria-hidden`; maintain one `h1` per page and the landmark structure.
 
-## Before launch (authored placeholders to swap)
+## Content still to finalize (see HANDOFF.md)
 
-The prototype contains realistic placeholders — see the README's "Content to swap" section for the full list: real Substack post titles/dates, résumé experience entries, the `hello@singolab.com` email, the "Now" date, and switching OG/canonical/JSON-LD URLs from relative to absolute.
+- **Email:** `lib/site.ts` `EMAIL` is still the `hello@singolab.com` placeholder — swap in the real address once it exists (single source of truth; flows into footer, résumé, and JSON-LD).
+- **EP 3:** shown as an unpublished work-in-progress teaser in `Writing.tsx`; flip it to a real linked post when live (and host the `bigram-commentator.html` demo under `public/demos/`).
+- **"Now" date** (`Now.tsx`) should be kept current.
+- **Verify** the SoundCloud URL in `lib/site.ts`.
+
+## This repo is public
+
+Do not commit secrets, the phone number, the personal email, or unpublished draft content. The EP 3 draft and `bigram-commentator.html` demo are intentionally **not** in the repo. Work on a branch; commit only when asked.

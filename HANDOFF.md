@@ -7,7 +7,8 @@ prioritized next-steps list for whoever picks the work up.
 
 - The site is **built and working**: Next.js 15 + TypeScript + Tailwind,
   configured for **static export** (`output: 'export'` → `out/`).
-- Branch: **`build/nextjs-site`** (2 commits, not yet merged to `main`, not pushed).
+- Branch: **`build/nextjs-site`** (4 commits). `main` has been created locally from
+  this branch's tip; **neither branch is pushed to `origin` yet** (see step 1).
 - Content is **real** (no placeholders left except the email — see below):
   - Writing: real *Learning AI Out Loud* posts (EP 1, EP 2, Introduction) link
     to Substack; **EP 3 is shown as an unpublished work-in-progress teaser**.
@@ -27,8 +28,12 @@ prioritized next-steps list for whoever picks the work up.
 
 ## Next steps (prioritized)
 
-1. **Merge `build/nextjs-site` → `main`** (or push + open a PR). `main` should be
-   the source of truth Cloudflare builds from.
+1. **Push `main` to `origin`.** `main` already exists locally (created from
+   `build/nextjs-site`) and should be the source of truth Cloudflare builds from.
+   Pushing needs the owner's machine: GitHub SSH must be trusted first
+   (`git ls-remote origin` currently fails with "Host key verification failed").
+   Run `ssh -T git@github.com` once to add the host key, then
+   `git push -u origin main` (and optionally push `build/nextjs-site`).
 
 2. **Deploy to Cloudflare Pages** (domain `singolab.com` already purchased there).
    - Framework preset: Next.js (Static HTML Export). Build command: `next build`.
