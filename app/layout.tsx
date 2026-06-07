@@ -51,7 +51,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#FAF7F2',
+  // Opt into edge-to-edge so env(safe-area-inset-*) takes effect on notched
+  // phones; the CSS handles the insets on fixed/edge elements.
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#FAF7F2' },
+    { media: '(prefers-color-scheme: dark)', color: '#15120E' },
+  ],
 };
 
 // Runs before paint: applies the saved/system theme so there's no flash.

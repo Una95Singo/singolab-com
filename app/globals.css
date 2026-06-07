@@ -71,6 +71,10 @@ a {
   max-width: 1080px;
   margin: 0 auto;
   padding: 0 clamp(22px, 5vw, 56px);
+  /* Respect the notch/curved corners in landscape on devices that report
+     safe-area insets; degrades to the clamp value everywhere else. */
+  padding-left: max(clamp(22px, 5vw, 56px), env(safe-area-inset-left, 0px));
+  padding-right: max(clamp(22px, 5vw, 56px), env(safe-area-inset-right, 0px));
 }
 .mono {
   font-family: var(--mono);
@@ -97,6 +101,8 @@ header.mast {
   background: color-mix(in srgb, var(--paper) 72%, transparent);
   border-bottom: 1px solid transparent;
   transition: border-color 0.3s ease, background 0.5s ease;
+  /* Keep the bar below the status bar / notch when viewport-fit=cover. */
+  padding-top: env(safe-area-inset-top, 0px);
 }
 header.mast.scrolled {
   border-bottom-color: var(--line);
@@ -209,7 +215,7 @@ nav.links a.nav-item:hover::after {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--line);
-    padding: 6px clamp(22px, 5vw, 56px) 16px;
+    padding: 6px clamp(22px, 5vw, 56px) calc(16px + env(safe-area-inset-bottom, 0px));
     transform: translateY(-10px);
     opacity: 0;
     pointer-events: none;
@@ -332,7 +338,7 @@ button:focus-visible {
   position: absolute;
   left: clamp(22px, 5vw, 56px);
   right: clamp(22px, 5vw, 56px);
-  bottom: 30px;
+  bottom: calc(30px + env(safe-area-inset-bottom, 0px));
   z-index: 2;
   display: flex;
   align-items: center;
@@ -371,7 +377,7 @@ button:focus-visible {
     align-items: flex-start;
   }
   .hero-in {
-    padding-top: 96px;
+    padding-top: calc(96px + env(safe-area-inset-top, 0px));
   }
   #signal {
     opacity: 0.45;
@@ -922,7 +928,7 @@ html[data-theme="dark"] .feature .fside {
 
 /* ---------- footer ---------- */
 footer.site {
-  padding: clamp(80px, 11vw, 130px) 0 48px;
+  padding: clamp(80px, 11vw, 130px) 0 calc(48px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--line);
 }
 .foot-h {
@@ -1291,6 +1297,48 @@ footer.site {
 .notfound a.home:hover {
   color: var(--ink);
   border-color: var(--accent);
+}
+
+/* ---------- mobile touch targets ----------
+   Best-practice ≥44px hit areas on phones (icon buttons, redraw, footer
+   pills, résumé controls). Scoped to ≤700px so desktop is unchanged. Inline
+   text links in prose are intentionally left at their natural size. */
+@media (max-width: 700px) {
+  .menu-toggle,
+  .toggle {
+    width: 44px;
+    height: 44px;
+  }
+  .menu-toggle svg,
+  .toggle svg {
+    width: 18px;
+    height: 18px;
+  }
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .sigcap button {
+    min-height: 44px;
+    padding: 6px 12px;
+  }
+  .foot-links a {
+    padding: 12px 18px;
+  }
+  .resume .btn {
+    padding: 12px 16px;
+  }
+  .resume .back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .resume .rail a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
 }
 
 /* ---------- reduced motion ---------- */
