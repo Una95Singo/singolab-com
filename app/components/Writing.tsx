@@ -16,7 +16,7 @@ type Post = {
 const POSTS: Post[] = [
   {
     num: 'Nº 05',
-    title: 'Learning AI Out Loud, EP 3: Goal for All ______',
+    title: 'Learning AI Out Loud, EP 3: Goal for All Africa',
     dek: 'The simplest ancestor of the machine you talk to — built from scratch, and explained by a World Cup that’s repeating itself.',
     meta: 'In progress · Jun 2026',
     wip: true,
