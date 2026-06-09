@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#15120e" />
+<title>The Commentator — a bigram you can watch think · Learning AI Out Loud</title>
+<meta name="description" content="Build the simplest ancestor of a language model — a count-based bigram — one step at a time, then watch it forget who scored. The interactive companion to EP3 of Learning AI Out Loud." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;1,7..72,400&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+     The Commentator — singolab.com demo (EP3)
+     Self-contained, embeddable, no storage. Matches the site's
+     warm editorial system (Newsreader / Literata / Spline Mono).
+     Respects prefers-color-scheme; optional in-memory theme flip.
+     ============================================================ */
+  :root {
+    --serif: 'Newsreader', Georgia, serif;
+    --body: 'Literata', Georgia, serif;
+    --mono: 'Spline Sans Mono', ui-monospace, monospace;
+
+    /* dark (default — the site's signature near-black) */
+    --paper: #15120e;
+    --paper-2: #1c1812;
+    --card: #1e1a14;
+    --ink: #f1ebe0;
+    --ink-2: #beb4a5;
+    --ink-3: #8a8073;
+    --line: rgba(241, 235, 224, 0.12);
+    --line-2: rgba(241, 235, 224, 0.18);
+    --grid-line: rgba(241, 235, 224, 0.05);
+    --accent: #7aa0ff;
+    --warm: #ff9460;
+    --green: #5fcf80;
+    --green-dim: #2f5e3e;
+    --bad: #ff7a72;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --paper: #faf7f2;
+      --paper-2: #f2ece1;
+      --card: #fcfaf6;
+      --ink: #2a2622;
+      --ink-2: #5a544c;
+      --ink-3: #948c81;
+      --line: rgba(42, 38, 34, 0.12);
+      --line-2: rgba(42, 38, 34, 0.18);
+      --grid-line: rgba(42, 38, 34, 0.05);
+      --accent: #2f5bdb;
+      --warm: #e8662f;
+      --green: #2f8f4e;
+      --green-dim: #bfe0c9;
+      --bad: #c8442f;
+    }
+  }
+  /* in-memory manual override (no persistence) */
+  html[data-force="dark"] {
+    --paper: #15120e; --paper-2: #1c1812; --card: #1e1a14;
+    --ink: #f1ebe0; --ink-2: #beb4a5; --ink-3: #8a8073;
+    --line: rgba(241,235,224,.12); --line-2: rgba(241,235,224,.18); --grid-line: rgba(241,235,224,.05);
+    --accent: #7aa0ff; --warm: #ff9460; --green:#5fcf80; --green-dim:#2f5e3e; --bad:#ff7a72;
+  }
+  html[data-force="light"] {
+    --paper: #faf7f2; --paper-2: #f2ece1; --card: #fcfaf6;
+    --ink: #2a2622; --ink-2: #5a544c; --ink-3: #948c81;
+    --line: rgba(42,38,34,.12); --line-2: rgba(42,38,34,.18); --grid-line: rgba(42,38,34,.05);
+    --accent: #2f5bdb; --warm: #e8662f; --green:#2f8f4e; --green-dim:#bfe0c9; --bad:#c8442f;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    padding: clamp(14px, 3vw, 30px);
+  }
+  .stage {
+    max-width: 760px;
+    margin: 0 auto;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    overflow: hidden;
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 42px 42px;
+  }
+
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 18px clamp(16px, 3vw, 26px);
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--paper) 70%, transparent);
+  }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--accent);
+  }
+  .htitle { flex: 1; min-width: 0; }
+  .htitle h1 {
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(22px, 4.6vw, 31px); letter-spacing: -0.02em;
+    line-height: 1.02; margin: 4px 0 0;
+  }
+  .theme {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em;
+    color: var(--ink-2); background: transparent;
+    border: 1px solid var(--line-2); border-radius: 100px;
+    padding: 7px 12px; cursor: pointer; white-space: nowrap; transition: 0.2s;
+  }
+  .theme:hover { color: var(--ink); border-color: var(--ink-3); }
+
+  /* step rail */
+  .rail { display: flex; flex-wrap: wrap; gap: 6px; padding: 14px clamp(16px, 3vw, 26px) 0; }
+  .rail button {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.03em;
+    color: var(--ink-3); background: transparent;
+    border: 1px solid var(--line); border-radius: 100px;
+    padding: 6px 12px; cursor: pointer; display: inline-flex; gap: 7px; align-items: center;
+    transition: 0.18s;
+  }
+  .rail button .n { color: var(--accent); }
+  .rail button:hover { color: var(--ink); border-color: var(--ink-3); }
+  .rail button.cur { color: var(--ink); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
+  .rail button.done .n { color: var(--green); }
+
+  main { padding: clamp(18px, 3vw, 28px); }
+  .step-h {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px;
+  }
+  .step-h .num { color: var(--accent); }
+  h2.title {
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(24px, 4vw, 34px); letter-spacing: -0.02em;
+    line-height: 1.06; margin: 0 0 14px;
+  }
+  p.lede { font-size: 16px; color: var(--ink-2); line-height: 1.62; margin: 0 0 18px; max-width: 60ch; }
+  p.lede b { color: var(--ink); font-weight: 500; }
+  p.lede .g { color: var(--green); font-weight: 500; }
+  p.lede .w { color: var(--warm); font-weight: 500; }
+  .small { font-size: 13.5px; color: var(--ink-3); line-height: 1.55; }
+
+  /* tape */
+  .tape {
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.95;
+    color: var(--ink-2); background: var(--paper-2);
+    border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 14px; max-height: 260px; overflow: auto;
+  }
+  .tape .grp { color: var(--accent); display: block; margin: 12px 0 2px; font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; }
+  .tape .grp:first-child { margin-top: 0; }
+  .tape .tag { color: var(--warm); }
+  .tape .end { color: var(--ink-3); }
+  .stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .stat { flex: 1; min-width: 110px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .stat b { display: block; font-family: var(--serif); font-size: 26px; line-height: 1.05; color: var(--ink); }
+  .stat span { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
+
+  /* controls */
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 4px 0 14px; }
+  label.fld { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
+  select {
+    font-family: var(--mono); font-size: 13px; color: var(--ink);
+    background: var(--paper-2); border: 1px solid var(--line-2); border-radius: 8px;
+    padding: 8px 30px 8px 12px; cursor: pointer; min-width: 150px; appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--ink-3) 50%), linear-gradient(135deg, var(--ink-3) 50%, transparent 50%);
+    background-position: calc(100% - 16px) 16px, calc(100% - 11px) 16px; background-size: 5px 5px; background-repeat: no-repeat;
+  }
+  .btn {
+    font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.02em;
+    color: var(--paper); background: var(--accent); border: 0; border-radius: 8px;
+    padding: 10px 16px; cursor: pointer; transition: 0.15s;
+  }
+  .btn:hover { filter: brightness(1.07); }
+  .btn:disabled { opacity: 0.45; cursor: default; filter: none; }
+  .btn.ghost { background: transparent; color: var(--ink-2); border: 1px solid var(--line-2); }
+  .btn.ghost:hover { color: var(--ink); border-color: var(--ink-3); filter: none; }
+  .btn.warm { background: var(--warm); }
+  .seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: 8px; overflow: hidden; }
+  .seg button { font-family: var(--mono); font-size: 12px; background: transparent; color: var(--ink-3); border: 0; padding: 9px 13px; cursor: pointer; }
+  .seg button.on { background: var(--accent); color: var(--paper); }
+
+  /* event buttons */
+  .events { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 16px; }
+  .ev {
+    font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.02em;
+    color: var(--ink-2); background: var(--paper-2); border: 1px solid var(--line-2);
+    border-radius: 100px; padding: 9px 15px; cursor: pointer; transition: 0.15s;
+  }
+  .ev:hover { color: var(--ink); border-color: var(--ink-3); }
+  .ev.on { color: var(--paper); background: var(--green); border-color: var(--green); }
+
+  /* sliding window */
+  .windowline { display: flex; flex-wrap: wrap; gap: 7px; font-family: var(--mono); font-size: clamp(13px, 3vw, 16px); margin: 6px 0 12px; align-items: center; }
+  .wtok { padding: 5px 9px; border-radius: 6px; background: var(--paper-2); color: var(--ink-3); border: 1px solid transparent; transition: 0.18s; }
+  .wtok.win { background: var(--warm); color: #1a120b; border-color: var(--warm); font-weight: 500; }
+  .wtok.tag { color: var(--warm); }
+  .pairs { display: flex; flex-wrap: wrap; gap: 7px; min-height: 32px; margin: 10px 0; }
+  .pair { font-family: var(--mono); font-size: 12px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; color: var(--ink-2); animation: pop 0.24s; }
+  .pair .ar { color: var(--accent); margin: 0 5px; }
+  .pair.latest { background: color-mix(in srgb, var(--accent) 14%, var(--paper-2)); border-color: var(--accent); color: var(--ink); }
+  @keyframes pop { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+
+  /* heatmap */
+  .hm-wrap { overflow-x: auto; padding-bottom: 6px; margin: 6px 0 12px; }
+  .hm { display: inline-grid; gap: 3px; }
+  .hm-corner { font-family: var(--mono); font-size: 9px; line-height: 1.2; color: var(--ink-3); display: flex; align-items: flex-end; justify-content: flex-end; text-align: right; padding: 2px 4px; }
+  .hm-col { font-family: var(--mono); font-size: 10px; color: var(--ink-3); writing-mode: vertical-rl; transform: rotate(180deg); justify-self: center; align-self: end; padding-bottom: 4px; max-height: 70px; }
+  .hm-col.tagcol { color: var(--warm); }
+  .hm-row { font-family: var(--mono); font-size: 11px; color: var(--ink-2); display: flex; align-items: center; justify-content: flex-end; padding-right: 7px; white-space: nowrap; }
+  .hm-row.tagrow { color: var(--warm); }
+  .hm-cell { width: 30px; height: 28px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 11px; color: #0d1f12; border-radius: 4px; background: rgba(95, 207, 128, var(--a, 0)); }
+  .hm-cell.empty { background: color-mix(in srgb, var(--ink) 4%, transparent); color: transparent; }
+  .hm-cell.hot { outline: 2px solid var(--warm); outline-offset: -1px; }
+  .legend { font-size: 13px; color: var(--ink-3); line-height: 1.6; margin-top: 6px; }
+  .legend b { color: var(--ink-2); }
+  .legend .o { display: inline-block; width: 12px; height: 12px; border-radius: 3px; outline: 2px solid var(--warm); outline-offset: -1px; background: rgba(95,207,128,.6); vertical-align: -2px; margin: 0 2px; }
+
+  /* count strip + formula */
+  .countstrip { display: flex; flex-wrap: wrap; gap: 7px; margin: 4px 0 8px; }
+  .ct { font-family: var(--mono); font-size: 12px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; color: var(--ink-2); }
+  .ct b { color: var(--warm); }
+  .divnote { font-family: var(--mono); font-size: 12.5px; color: var(--ink-3); margin: 8px 0 10px; line-height: 1.6; }
+  .divnote b { color: var(--ink); }
+  .formula { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); margin: 10px 0; line-height: 1.5; }
+  .formula b { color: var(--accent); }
+
+  /* bars */
+  .bars { display: grid; gap: 7px; }
+  .bar { display: grid; grid-template-columns: 116px 1fr auto; align-items: center; gap: 10px; border-radius: 7px; padding: 2px 4px; }
+  .bar .w { font-family: var(--mono); font-size: 12.5px; color: var(--ink); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar .w.end { color: var(--ink-3); font-style: italic; }
+  .track { height: 18px; background: var(--paper-2); border-radius: 5px; overflow: hidden; }
+  .fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg, var(--green-dim), var(--green)); transform-origin: left; animation: grow 0.4s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  @keyframes grow { from { transform: scaleX(0); } }
+  .bar .pct { font-family: var(--mono); font-size: 12px; color: var(--ink-2); min-width: 44px; text-align: right; }
+  .bar.picked { outline: 2px solid var(--warm); outline-offset: 1px; background: color-mix(in srgb, var(--warm) 10%, transparent); }
+  .bar.picked .fill { background: linear-gradient(90deg, var(--warm), color-mix(in srgb, var(--warm) 60%, var(--green))); }
+
+  /* commentary line */
+  .line {
+    margin: 0 0 14px; min-height: 58px; border-radius: 9px;
+    border: 1px solid var(--line); border-left: 3px solid var(--warm);
+    background: var(--paper-2); padding: 14px 16px;
+    font-family: var(--serif); font-size: clamp(17px, 3.2vw, 21px); line-height: 1.55;
+  }
+  .line .lead { display: block; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--warm); margin-bottom: 8px; }
+  .tok { display: inline-block; animation: pop 0.24s; }
+  .cursor { display: inline-block; width: 9px; height: 1.05em; background: var(--warm); vertical-align: -2px; margin-left: 3px; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .placeholder { color: var(--ink-3); font-style: italic; font-family: var(--body); font-size: 15px; }
+  .endtag { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); margin-left: 6px; }
+  .standing { font-family: var(--mono); font-size: 12px; color: var(--ink-3); margin: 2px 0 6px; }
+  .standing .cur { color: var(--paper); background: var(--warm); padding: 2px 9px; border-radius: 6px; }
+  .narr { font-size: 14px; color: var(--ink-2); background: var(--paper-2); border: 1px solid var(--line); border-radius: 8px; padding: 11px 13px; margin: 12px 0; line-height: 1.55; min-height: 20px; }
+  .narr b { color: var(--ink); } .narr .dim { color: var(--ink-3); }
+
+  /* why callout */
+  .why { border: 1px solid color-mix(in srgb, var(--warm) 45%, var(--line)); border-left: 3px solid var(--warm); background: color-mix(in srgb, var(--warm) 8%, transparent); border-radius: 8px; padding: 13px 15px; margin: 12px 0; }
+  .why h4 { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm); margin: 0 0 7px; }
+  .why p { margin: 0; font-size: 14px; color: var(--ink-2); line-height: 1.6; }
+  .why p b { color: var(--ink); }
+
+  /* failure cards */
+  .fcards { display: grid; gap: 12px; margin: 4px 0; }
+  .fcard { border: 1px solid var(--line); border-radius: 9px; background: var(--paper-2); padding: 15px 16px; }
+  .fcard .fh { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+  .fcard .ftag { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--paper); background: var(--bad); border-radius: 100px; padding: 3px 9px; }
+  .fcard .ftag.hero { background: var(--warm); }
+  .fcard h3 { font-family: var(--serif); font-weight: 500; font-size: 19px; margin: 0; letter-spacing: -0.01em; }
+  .fcard p { font-size: 14px; color: var(--ink-2); line-height: 1.6; margin: 0 0 12px; }
+  .fout { font-family: var(--serif); font-size: clamp(16px, 3vw, 19px); line-height: 1.5; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 7px; padding: 12px 14px; min-height: 44px; margin: 10px 0; }
+  .fout .bad { color: var(--bad); font-style: italic; }
+  .fout .ok { color: var(--green); }
+
+  /* hook ladder */
+  .ladder { display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; margin: 6px 0 14px; }
+  .rung { flex: 1; min-width: 120px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper-2); padding: 13px; }
+  .rung.now { border-color: var(--warm); background: color-mix(in srgb, var(--warm) 8%, transparent); }
+  .rung .rn { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+  .rung.now .rn { color: var(--warm); }
+  .rung h4 { font-family: var(--serif); font-weight: 500; font-size: 17px; margin: 6px 0 4px; }
+  .rung p { font-size: 13px; color: var(--ink-3); line-height: 1.5; margin: 0; }
+
+  /* nav */
+  .nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .stepname { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); text-align: center; flex: 1; }
+
+  footer { padding: 14px clamp(16px, 3vw, 26px); border-top: 1px solid var(--line); font-family: var(--mono); font-size: 11px; color: var(--ink-3); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  footer a { color: var(--ink-2); border-bottom: 1px solid var(--line-2); }
+  footer a:hover { color: var(--ink); }
+  footer b { color: var(--green); font-weight: 500; }
+
+  a:focus-visible, button:focus-visible, select:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px;
+  }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+  @media (max-width: 520px) {
+    .bar { grid-template-columns: 92px 1fr; grid-template-areas: "w track" "pct pct"; row-gap: 3px; }
+    .bar .w { grid-area: w; } .track { grid-area: track; } .bar .pct { grid-area: pct; text-align: left; min-width: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fill { animation: none; }
+    .tok, .pair { animation: none; }
+    .cursor { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <header>
+    <div class="htitle">
+      <div class="kicker">Learning AI Out Loud · EP3</div>
+      <h1>The Commentator</h1>
+    </div>
+    <button class="theme" id="theme" type="button" aria-label="Switch colour theme">◐ theme</button>
+  </header>
+
+  <nav class="rail" id="rail" aria-label="Steps"></nav>
+
+  <main id="main">
+    <div id="body"></div>
+    <div class="nav">
+      <button class="btn ghost" id="back" type="button">← Back</button>
+      <div class="stepname" id="stepname"></div>
+      <button class="btn" id="next" type="button">Next →</button>
+    </div>
+  </main>
+
+  <footer>
+    <span>An honest bigram — <b>no neural network involved</b>.</span>
+    <span><a href="https://usingo.substack.com" target="_blank" rel="noopener">Learning AI Out Loud</a></span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- corpus: tagged by scenario ----------
+     Every line carries an event tag. The tag is a sentinel that conditions
+     ONLY the first word: P(firstWord | <tag>). After that it is pure
+     word-to-word probability, pooled across the whole corpus — which is
+     exactly what makes the model forget which team we were celebrating. */
+  const EVENTS = [
+    { tag: 'goal', label: 'South Africa score!', short: 'Goal' },
+    { tag: 'near', label: 'So close!',           short: 'Near miss' },
+    { tag: 'save', label: 'Great save!',         short: 'Save' },
+    { tag: 'foul', label: 'Foul!',               short: 'Foul / card' },
+    { tag: 'pen',  label: 'Penalty!',            short: 'Penalty' },
+    { tag: 'kick', label: 'Kick-off',            short: 'Kick-off' },
+    { tag: 'ft',   label: 'Full time',           short: 'Full time' }
+  ];
+  const EVLABEL = {}; EVENTS.forEach(e => EVLABEL[e.tag] = e.short);
+
+  const CORPUS = [
+    // GOAL — seeded with both teams so the bigram can cross the wires
+    ['goal', 'goal for all africa'],
+    ['goal', 'goal for south africa'],
+    ['goal', 'south africa score through tshabalala'],
+    ['goal', 'tshabalala with a brilliant left foot strike'],
+    ['goal', 'tshabalala buries it in the top corner'],
+    ['goal', 'what a goal for south africa'],
+    ['goal', 'what a strike from tshabalala'],
+    ['goal', 'rejoice for all africa'],
+    ['goal', 'mexico score through marquez'],
+    ['goal', 'marquez with the equaliser for mexico'],
+    ['goal', 'the captain marquez levels it'],
+    ['goal', 'and the net bulges'],
+    ['goal', 'the ball is in the net'],
+    ['goal', 'the ball is in the corner'],
+    ['goal', 'the ball is in the box'],
+    ['goal', 'the ball is in the back of the net'],
+
+    // NEAR MISS
+    ['near', 'so close for south africa'],
+    ['near', 'it rolls just wide of the post'],
+    ['near', 'off the crossbar and away'],
+    ['near', 'inches wide of the corner'],
+    ['near', 'what a chance gone begging'],
+    ['near', 'just over the bar'],
+    ['near', 'agonisingly close for the visitors'],
+    ['near', 'a huge let off at the back'],
+
+    // GREAT SAVE
+    ['save', 'what a save by the keeper'],
+    ['save', 'denied by a flying hand'],
+    ['save', 'a fingertip save onto the post'],
+    ['save', 'he tips it over the bar'],
+    ['save', 'brilliant goalkeeping under pressure'],
+    ['save', 'a wall in goal tonight'],
+    ['save', 'denied by a stunning stop'],
+    ['save', 'what a reflex save'],
+
+    // FOUL / CARD
+    ['foul', 'that is a yellow card'],
+    ['foul', 'a yellow card for a clumsy challenge in midfield'],
+    ['foul', 'the referee blows for a foul'],
+    ['foul', 'free kick to south africa'],
+    ['foul', 'he is booked for the late tackle'],
+    ['foul', 'a cynical foul stops the break'],
+    ['foul', 'a stern talking to'],
+    ['foul', 'advantage played and waved on'],
+
+    // PENALTY
+    ['pen', 'the referee points to the spot'],
+    ['pen', 'it is a penalty to mexico'],
+    ['pen', 'he steps up from the spot'],
+    ['pen', 'sent the keeper the wrong way'],
+    ['pen', 'straight down the middle'],
+    ['pen', 'a penalty in front of goal'],
+    ['pen', 'he tucks it into the corner'],
+    ['pen', 'cool as you like from the spot'],
+
+    // KICK-OFF
+    ['kick', 'and we are under way at the azteca'],
+    ['kick', 'the whistle blows to start the match'],
+    ['kick', 'sixteen years to the day'],
+    ['kick', 'south africa and mexico once more'],
+    ['kick', 'the crowd rises for kick off'],
+    ['kick', 'here we go again'],
+    ['kick', 'a world cup opens once more'],
+    ['kick', 'the dream begins again'],
+
+    // FULL-TIME
+    ['ft', 'the referee blows the final whistle'],
+    ['ft', 'it is all over at the azteca'],
+    ['ft', 'they think it is all over it is now'],
+    ['ft', 'what a day for african football'],
+    ['ft', 'the whole stadium is on its feet'],
+    ['ft', 'a result to remember'],
+    ['ft', 'the players sink to the turf'],
+    ['ft', 'full time at the azteca']
+  ];
+
+  const END = '▮';
+  const tagKey = t => '⟨' + t + '⟩'; // ⟨goal⟩
+
+  /* ---------- build the count tables ----------
+     counts: from -> Map(to -> n). Tag rows hold only first-word counts;
+     word rows hold pooled word-to-word counts. */
+  const counts = new Map();
+  const vocab = new Set();
+  let pairTotal = 0;
+  function add(a, b) {
+    if (!counts.has(a)) counts.set(a, new Map());
+    const m = counts.get(a);
+    m.set(b, (m.get(b) || 0) + 1);
+    pairTotal++;
+  }
+  CORPUS.forEach(([tag, line]) => {
+    const t = line.split(/\s+/);
+    t.forEach(w => vocab.add(w));
+    add(tagKey(tag), t[0]);              // scenario-conditioned first word
+    for (let i = 0; i < t.length - 1; i++) add(t[i], t[i + 1]); // pooled word-to-word
+    add(t[t.length - 1], END);
+  });
+
+  function rowTotal(w) { const m = counts.get(w); let s = 0; if (m) m.forEach(c => s += c); return s; }
+  function pc(a, b) { const m = counts.get(a); return m ? (m.get(b) || 0) : 0; }
+  function dist(w) {
+    const m = counts.get(w); if (!m) return [];
+    const tot = rowTotal(w);
+    return [...m.entries()].map(([k, c]) => ({ w: k, c, p: c / tot })).sort((a, b) => b.p - a.p);
+  }
+  // seeded RNG so the failure showcase is reproducible yet honest
+  function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function sampleNext(w, rng) {
+    const m = counts.get(w); if (!m) return END;
+    const tot = rowTotal(w); let r = (rng ? rng() : Math.random()) * tot;
+    for (const [k, c] of m) { r -= c; if (r <= 0) return k; } return END;
+  }
+  function greedyNext(w) {
+    const m = counts.get(w); if (!m) return END;
+    let best = END, bc = -1;
+    for (const [k, c] of m) { if (c > bc) { bc = c; best = k; } } return best;
+  }
+  function generate(start, mode, rng, cap) {
+    cap = cap || 26;
+    let cur = start; const words = []; const steps = [];
+    for (;;) {
+      const next = mode === 'greedy' ? greedyNext(cur) : sampleNext(cur, rng);
+      if (next === END || next == null) break;
+      words.push(next); steps.push({ from: cur, to: next }); cur = next;
+      if (words.length >= cap) break;
+    }
+    return { words, steps };
+  }
+  const lbl = w => (w === END ? 'end of line' : w);
+  const isTag = w => typeof w === 'string' && w.charAt(0) === '⟨';
+
+  // helpers used by the failure detector
+  const SA = new Set(['south', 'africa', 'tshabalala', 'bafana']);
+  const MX = new Set(['mexico', 'marquez']);
+  const hasFrom = (words, set) => words.some(w => set.has(w));
+
+  const $ = id => document.getElementById(id);
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // top words for the heatmap (most active rows), excluding tags
+  const TOP = [...vocab].map(w => ({ w, f: rowTotal(w) })).sort((a, b) => b.f - a.f).slice(0, 9).map(o => o.w);
+  let HMAX = 0; TOP.forEach(a => TOP.forEach(b => { const c = pc(a, b); if (c > HMAX) HMAX = c; }));
+
+  function renderBars(el, word, picked) {
+    const rows = dist(word).slice(0, 7); el.innerHTML = '';
+    if (!rows.length) { el.innerHTML = '<div class="narr" style="margin:0">No row for this word — the model never heard what comes next. (Zero counts: a real model patches this with <b>smoothing</b>.)</div>'; return; }
+    rows.forEach(r => {
+      const isEnd = r.w === END;
+      const d = document.createElement('div'); d.className = 'bar' + (picked && r.w === picked ? ' picked' : ''); d.dataset.w = r.w;
+      d.innerHTML = '<span class="w ' + (isEnd ? 'end' : '') + '">' + (isEnd ? 'end of line' : r.w) + '</span>' +
+        '<span class="track"><span class="fill" style="width:' + Math.max(r.p * 100, 2) + '%"></span></span>' +
+        '<span class="pct">' + Math.round(r.p * 100) + '%</span>';
+      el.appendChild(d);
+    });
+  }
+
+  /* =====================================================================
+     STEP 1 — THE TAPE
+     ===================================================================== */
+  function stTape(b) {
+    let groups = '';
+    EVENTS.forEach(e => {
+      groups += '<span class="grp">' + e.short + '</span>';
+      CORPUS.filter(c => c[0] === e.tag).forEach(c => {
+        groups += '<span class="tag">⟨' + e.tag + '⟩</span> ' + c[1] + ' <span class="end">' + END + '</span>\n';
+      });
+    });
+    b.innerHTML =
+      '<div class="step-h"><span class="num">01</span> · The tape</div>' +
+      '<h2 class="title">Everything it has ever heard</h2>' +
+      '<p class="lede">This is the commentator’s whole world: ' + CORPUS.length + ' short lines of football, sorted into the moments that set them off — a goal, a save, a foul. Each line is stamped with a <span class="w">⟨tag⟩</span> for the event and a <span class="g">' + END + '</span> for where it ends. That is all the memory it will ever get.</p>' +
+      '<div class="tape" tabindex="0" aria-label="The training corpus, grouped by scenario">' + groups + '</div>' +
+      '<div class="stats"><div class="stat"><b>' + CORPUS.length + '</b><span>lines heard</span></div>' +
+      '<div class="stat"><b>' + EVENTS.length + '</b><span>scenarios</span></div>' +
+      '<div class="stat"><b>' + vocab.size + '</b><span>different words</span></div></div>' +
+      '<p class="small" style="margin-top:14px">A tiny, see-through corpus is the whole point — small enough that you can check every word the model knows by hand.</p>';
+  }
+
+  /* =====================================================================
+     STEP 2 — FIND THE PAIRS (sliding window)
+     ===================================================================== */
+  const EX = ['south africa score through tshabalala', 'the ball is in the net', 'what a save by the keeper'];
+  let w2 = { line: 0, pos: 0 };
+  function stPairs(b) {
+    b.innerHTML =
+      '<div class="step-h"><span class="num">02</span> · Find the pairs</div>' +
+      '<h2 class="title">A bigram is just a pair of neighbours</h2>' +
+      '<p class="lede">First we chop a line into <b>tokens</b> (here, whole words — that was EP1). Then slide a two-word window across it. Each step reads off one <b>pair</b>: the first word is the <span class="g">context</span>, the second is <b>what came next</b>. Which words follow which — that is the entire idea.</p>' +
+      '<div class="row"><label class="fld" for="exline">Line</label><select id="exline"></select></div>' +
+      '<div class="windowline" id="wline"></div>' +
+      '<div class="pairs" id="plist" aria-live="polite"></div>' +
+      '<div class="row"><button class="btn" id="slide" type="button">Slide the window →</button><button class="btn ghost" id="auto" type="button">Auto</button><button class="btn ghost" id="rew" type="button">↺ Rewind</button></div>' +
+      '<div class="legend" id="w2note"></div>';
+    const sel = $('exline'); EX.forEach((l, i) => { const o = document.createElement('option'); o.value = i; o.textContent = l; sel.appendChild(o); });
+    sel.value = w2.line;
+    const toks = () => { const e = CORPUS.find(c => c[1] === EX[w2.line]); return [tagKey(e[0]), ...EX[w2.line].split(/\s+/), END]; };
+    function drawLine() {
+      const t = toks();
+      $('wline').innerHTML = t.map((w, i) => {
+        const win = (i === w2.pos || i === w2.pos + 1) ? ' win' : '';
+        const tg = (isTag(w) || w === END) ? ' tag' : '';
+        return '<span class="wtok' + win + tg + '">' + w + '</span>';
+      }).join('');
+    }
+    function drawPairs() {
+      const t = toks(); let h = '';
+      for (let i = 0; i < w2.pos; i++) {
+        h += '<span class="pair ' + (i === w2.pos - 1 ? 'latest' : '') + '">' + t[i] + '<span class="ar">→</span>' + t[i + 1] + '</span>';
+      }
+      $('plist').innerHTML = h;
+    }
+    function refresh() {
+      drawLine(); drawPairs();
+      const t = toks(); const done = w2.pos >= t.length - 1;
+      $('slide').disabled = done; $('auto').disabled = done;
+      $('w2note').innerHTML = done
+        ? 'That’s every pair in this line. Now picture the same slide across all <b>' + CORPUS.length + '</b> lines — that’s the next step.'
+        : 'The highlighted pair: <b>' + (isTag(t[w2.pos]) ? 'scenario ' + t[w2.pos] : t[w2.pos]) + '</b> → <b>' + (t[w2.pos + 1] === END ? 'end' : t[w2.pos + 1]) + '</b>. The very first pair pins the <span class="w">scenario tag</span> to the opening word.';
+    }
+    $('slide').onclick = () => { const t = toks(); if (w2.pos < t.length - 1) { w2.pos++; refresh(); } };
+    $('rew').onclick = () => { w2.pos = 0; refresh(); };
+    $('auto').onclick = async () => { $('slide').disabled = true; $('auto').disabled = true; const t = toks(); while (w2.pos < t.length - 1) { await wait(reduced ? 0 : 430); w2.pos++; refresh(); } };
+    sel.onchange = () => { w2.line = +sel.value; w2.pos = 0; refresh(); };
+    refresh();
+  }
+
+  /* =====================================================================
+     STEP 3 — COUNT THEM (heatmap grid)
+     ===================================================================== */
+  function stCount(b) {
+    let h =
+      '<div class="step-h"><span class="num">03</span> · Count them</div>' +
+      '<h2 class="title">Tally every pair into a grid</h2>' +
+      '<p class="lede">Slide that window across the whole tape and <b>count</b>. One row per word, one column per word that followed it. The bright squares are the commentator’s habits — and notice how much of the grid stays empty. Most pairs simply never happen.</p>' +
+      '<div class="hm-wrap"><div class="hm" style="grid-template-columns:104px repeat(' + TOP.length + ',30px)">';
+    h += '<div class="hm-corner">next →<br>↓ now on</div>';
+    TOP.forEach(c => h += '<div class="hm-col">' + c + '</div>');
+    TOP.forEach(a => {
+      let hot = null, hc = 0; TOP.forEach(c => { const v = pc(a, c); if (v > hc) { hc = v; hot = c; } });
+      h += '<div class="hm-row">' + a + '</div>';
+      TOP.forEach(c => {
+        const v = pc(a, c);
+        const al = v > 0 ? (0.3 + 0.65 * (v / HMAX)).toFixed(2) : 0;
+        const cls = v > 0 ? (c === hot ? ' hot' : '') : ' empty';
+        h += '<div class="hm-cell' + cls + '" title="' + a + ' → ' + c + ': ' + v + '×" style="--a:' + al + '">' + (v > 0 ? v : '') + '</div>';
+      });
+    });
+    h += '</div></div>' +
+      '<div class="legend">Read a row left to right: what tended to come <b>after</b> that word. The <span class="o"></span> outlined cell is each row’s most common follower. See how <b>the</b> → <b>ball</b>, and <b>score</b> / <b>through</b> point at <i>both</i> teams? Hold that thought — it is the flaw we’re about to meet. (Showing the 9 busiest words.)</div>';
+    b.innerHTML = h;
+  }
+
+  /* =====================================================================
+     STEP 4 — COUNTS INTO CHANCES (bars) + scenario conditioning
+     ===================================================================== */
+  function stChances(b) {
+    b.innerHTML =
+      '<div class="step-h"><span class="num">04</span> · Counts into chances</div>' +
+      '<h2 class="title">Divide, and you get probabilities</h2>' +
+      '<p class="lede">Take any row, divide each count by how often that word appeared, and the tallies become chances that add up to <b>100%</b>. Pick a <span class="w">scenario tag</span> and you can see the one place the event matters: it sets the <b>first</b> word. After that, it’s plain word-to-word.</p>' +
+      '<div class="row"><label class="fld" for="cw">Row for</label><select id="cw"></select></div>' +
+      '<div class="countstrip" id="cstrip"></div>' +
+      '<div class="divnote" id="dnote"></div>' +
+      '<div class="formula">the only formula here → <b>P(next | now) = count(now, next) ÷ count(now)</b></div>' +
+      '<div class="bars" id="cbars" aria-live="polite"></div>';
+    const sel = $('cw');
+    EVENTS.forEach(e => { const o = document.createElement('option'); o.value = tagKey(e.tag); o.textContent = '⟨' + e.tag + '⟩  (scenario: ' + e.short + ')'; sel.appendChild(o); });
+    const og = document.createElement('optgroup'); og.label = 'words';
+    TOP.forEach(w => { const o = document.createElement('option'); o.value = w; o.textContent = w; og.appendChild(o); });
+    sel.appendChild(og);
+    sel.value = tagKey('goal');
+    function draw() {
+      const w = sel.value; const rows = dist(w); const tot = rowTotal(w);
+      $('cstrip').innerHTML = rows.slice(0, 7).map(r => '<span class="ct">' + lbl(r.w) + ' <b>×' + r.c + '</b></span>').join('');
+      $('dnote').innerHTML = isTag(w)
+        ? 'Choosing <b>' + EVLABEL[w.slice(1, -1)] + '</b> means “start from the ' + w + ' row.” It appeared <b>' + tot + '</b> times, once per line of that scenario. Divide each by ' + tot + ' → the chances for the <b>opening</b> word.'
+        : '“' + w + '” appeared <b>' + tot + '</b> times in total. Divide each count by ' + tot + ' →';
+      renderBars($('cbars'), w);
+    }
+    sel.onchange = draw; draw();
+  }
+
+  /* =====================================================================
+     STEP 5 — COMMENTATE (the tool)
+     ===================================================================== */
+  let walk = { cur: null, words: [], done: false, tag: 'goal' };
+  let mode = 'sample';
+  function stTalk(b) {
+    b.innerHTML =
+      '<div class="step-h"><span class="num">05</span> · Now let it talk</div>' +
+      '<h2 class="title">Pick a moment. Watch it commentate.</h2>' +
+      '<p class="lede">Choose what just happened on the pitch. That sets where on the tape we start; from there the model just <b>walks the grid</b> — stand on a word, read its row of chances, roll the weighted die, step on, repeat — until the line ends.</p>' +
+      '<div class="events" id="events" role="group" aria-label="Pick a match event"></div>' +
+      '<div class="line" id="line" aria-live="polite"><span class="lead">Commentary</span><span id="lw"><span class="placeholder">pick a moment above, then take a step…</span></span></div>' +
+      '<div class="standing" id="standing"></div>' +
+      '<div class="bars" id="wbars" style="margin:8px 0"></div>' +
+      '<div class="narr" id="narr" aria-live="polite">The model’s entire memory is the one word it is standing on. Keep that in mind.</div>' +
+      '<div id="whyslot"></div>' +
+      '<div class="row"><button class="btn" id="step" type="button">Take one step →</button>' +
+      '<button class="btn ghost" id="run" type="button">Run to the end →→</button>' +
+      '<button class="btn ghost" id="rst" type="button">↺ Reset</button>' +
+      '<span class="seg" role="group" aria-label="Sampling mode"><button id="ms" type="button" class="' + (mode === 'sample' ? 'on' : '') + '">Roll the die</button><button id="mg" type="button" class="' + (mode === 'greedy' ? 'on' : '') + '">Greedy</button></span></div>' +
+      '<p class="small" style="margin-top:12px"><b>Greedy</b> always takes the single most likely word — confident, and prone to loops. <b>Roll the die</b> picks in proportion to the chances — livelier, and prone to wander.</p>';
+
+    const evWrap = $('events');
+    EVENTS.forEach(e => {
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'ev' + (e.tag === walk.tag ? ' on' : '');
+      btn.textContent = e.label; btn.setAttribute('aria-pressed', e.tag === walk.tag ? 'true' : 'false');
+      btn.onclick = () => { walk.tag = e.tag; [...evWrap.children].forEach(c => { c.classList.remove('on'); c.setAttribute('aria-pressed', 'false'); }); btn.classList.add('on'); btn.setAttribute('aria-pressed', 'true'); reset(); };
+      evWrap.appendChild(btn);
+    });
+
+    const lw = $('lw'), wbars = $('wbars'), narr = $('narr'), standing = $('standing'), stepB = $('step'), runB = $('run'), whyslot = $('whyslot');
+
+    function renderStanding() {
+      const onTag = isTag(walk.cur);
+      standing.innerHTML = 'Standing on: <span class="cur">' + (onTag ? '⟨' + walk.cur.slice(1, -1) + '⟩' : walk.cur) + '</span> <span style="color:var(--ink-3)">— its row of chances:</span>';
+      renderBars(wbars, walk.cur);
+    }
+    function renderLine() {
+      if (!walk.words.length && !walk.done) { lw.innerHTML = '<span class="placeholder">pick a moment above, then take a step…</span>'; return; }
+      lw.innerHTML = walk.words.map(w => '<span class="tok">' + w + '</span>').join(' ') + (walk.done ? ' <span class="endtag">end of line</span>' : ' <span class="cursor"></span>');
+    }
+    function narrate(prev, picked) {
+      const v = mode === 'greedy' ? 'took the most common next word' : 'rolled the die';
+      if (isTag(prev)) return picked === END ? 'Nothing to say.' : 'Scenario <b>' + EVLABEL[prev.slice(1, -1)] + '</b> — ' + v + ' and opened with <b>' + picked + '</b>.';
+      if (picked === END) return 'After <b>' + prev + '</b>, the line most often just… ends. And so it did.';
+      const pctv = Math.round(pc(prev, picked) / rowTotal(prev) * 100);
+      return 'On <b>' + prev + '</b> → ' + v + ' → <b>' + picked + '</b> <span class="dim">(followed “' + prev + '” ' + pctv + '% of the time)</span>.';
+    }
+    function checkWhy() {
+      whyslot.innerHTML = '';
+      const sa = hasFrom(walk.words, SA), mx = hasFrom(walk.words, MX);
+      if (walk.tag === 'goal' && sa && mx) {
+        whyslot.innerHTML = '<div class="why"><h4>Why did it say that?</h4><p>You picked <b>South Africa score</b>, yet the line names <b>Mexico / Márquez</b> too. The model didn’t lie — it <b>forgot</b>. By the time it reached the scorer, all it could see was the single word before it (often <b>“through”</b> or <b>“with”</b>), and that word says nothing about which team we were celebrating. One word of memory, one crossed wire. <i>This</i> is the gap that attention closes, later in the series.</p></div>';
+      } else {
+        const loop = walk.words.length >= 8 && walk.words.slice(-6).join(' ').match(/(\b\w+\b)( \w+){0,2} \1/);
+        if (loop) whyslot.innerHTML = '<div class="why"><h4>Why did it say that?</h4><p>It’s stuck in a loop — <b>the → ball → is → in → the → ball…</b> — because the likeliest word after each is the start of the same little circle, and it can’t see far enough back to notice it’s repeating.</p></div>';
+      }
+    }
+    let busy = false; // re-entrancy lock so rapid clicks can't interleave steps
+    function finish() { walk.done = true; renderLine(); stepB.disabled = true; runB.disabled = true; checkWhy(); }
+    async function doStep() {
+      if (walk.done) return;
+      const prev = walk.cur;
+      const picked = mode === 'greedy' ? greedyNext(prev) : sampleNext(prev);
+      let row = null; wbars.querySelectorAll('.bar').forEach(x => { if (x.dataset.w === picked) row = x; });
+      if (row && !reduced) { row.classList.add('picked'); await wait(240); }
+      narr.innerHTML = narrate(prev, picked);
+      if (picked !== END && !isTag(picked)) walk.words.push(picked);
+      if (picked === END) { walk.cur = END; finish(); return; }
+      walk.cur = picked; renderLine();
+      if (walk.words.length >= 24) { finish(); return; }
+      renderStanding();
+    }
+    async function step() { if (busy || walk.done) return; busy = true; try { await doStep(); } finally { busy = false; } }
+    async function run() {
+      if (busy) return; busy = true; stepB.disabled = true; runB.disabled = true;
+      try { while (!walk.done) { await doStep(); if (walk.done) break; await wait(reduced ? 0 : 380); } }
+      finally { busy = false; }
+    }
+    function reset() {
+      walk.cur = tagKey(walk.tag); walk.words = []; walk.done = false;
+      stepB.disabled = false; runB.disabled = false; whyslot.innerHTML = '';
+      narr.innerHTML = 'Starting from <b>' + EVLABEL[walk.tag] + '</b>. Press <b>Take one step</b> and watch the first word get drawn.';
+      renderStanding(); renderLine();
+    }
+    $('ms').onclick = () => { mode = 'sample'; $('ms').classList.add('on'); $('mg').classList.remove('on'); };
+    $('mg').onclick = () => { mode = 'greedy'; $('mg').classList.add('on'); $('ms').classList.remove('on'); };
+    stepB.onclick = step; runB.onclick = run; $('rst').onclick = reset;
+    reset();
+  }
+
+  /* =====================================================================
+     STEP 6 — WHERE IT BREAKS (failure showcase)
+     ===================================================================== */
+  function findWalk(start, predicate, tries) {
+    tries = tries || 8000;
+    for (let s = 1; s <= tries; s++) {
+      const g = generate(start, 'sample', mulberry32(s));
+      if (g.words.length && predicate(g.words)) return g.words;
+    }
+    return null;
+  }
+  // Layered search for the cleanest "wrong scorer" run: ideally it opens with
+  // one team and then names the other. Every result is a genuine model walk.
+  function findHero() {
+    const opensSA = w => w[0] === 'south' || w[0] === 'tshabalala';
+    const opensMX = w => w[0] === 'mexico' || w[0] === 'marquez';
+    return findWalk(tagKey('goal'), w => w.length >= 4 && opensSA(w) && hasFrom(w, MX))
+        || findWalk(tagKey('goal'), w => w.length >= 4 && opensMX(w) && hasFrom(w, SA))
+        || findWalk(tagKey('goal'), w => hasFrom(w, SA) && hasFrom(w, MX))
+        || findWalk(tagKey('goal'), w => hasFrom(w, MX));
+  }
+  function stFail(b) {
+    b.innerHTML =
+      '<div class="step-h"><span class="num">06</span> · Where it breaks</div>' +
+      '<h2 class="title">Brilliant up close, hopeless at a distance</h2>' +
+      '<p class="lede">Every pair it knows is real, so short reactions can’t sound wrong. Ask for more than a beat, though, and its one word of memory shows. Press each button — these are real runs of the model you just built.</p>' +
+      '<div class="fcards">' +
+        '<div class="fcard"><div class="fh"><span class="ftag hero">Hero failure</span><h3>It forgets who scored</h3></div>' +
+          '<p>Pick <b>South Africa score</b> and let it run. Because both teams’ goals share words like <i>score through</i> and <i>with</i>, the line can wander across to the other team — crediting Márquez, Mexico’s captain, for a South African goal.</p>' +
+          '<div class="fout" id="hero">—</div><button class="btn warm" id="heroBtn" type="button">Call a South Africa goal →</button></div>' +
+        '<div class="fcard"><div class="fh"><span class="ftag">Repetition</span><h3>It loops forever</h3></div>' +
+          '<p>In its most confident (greedy) setting it chases the single likeliest word every time — and walks straight into a circle it can’t see.</p>' +
+          '<div class="fout" id="loop">—</div><button class="btn ghost" id="loopBtn" type="button">Run greedy →</button></div>' +
+        '<div class="fcard"><div class="fh"><span class="ftag">Sparsity</span><h3>It draws a blank</h3></div>' +
+          '<p>Ask about a word it never heard — say <i>vuvuzela</i> — and there’s no row to read. Zero counts, nothing to say. (Real models paper over this with <b>smoothing</b>.)</p>' +
+          '<div class="fout" id="sparse">—</div><button class="btn ghost" id="sparseBtn" type="button">Ask about “vuvuzela” →</button></div>' +
+      '</div>';
+    $('heroBtn').onclick = () => {
+      const words = findHero();
+      const out = $('hero');
+      if (!words) { out.textContent = 'south africa score through tshabalala'; return; }
+      out.innerHTML = words.map(w => (MX.has(w) ? '<span class="bad">' + w + '</span>' : w)).join(' ') +
+        '<br><span style="font-family:var(--mono);font-size:11.5px;color:var(--ink-3)">— same breath, wrong team. It only ever saw one word back.</span>';
+    };
+    $('loopBtn').onclick = () => {
+      const g = generate(tagKey('goal'), 'greedy');
+      $('loop').innerHTML = g.words.join(' ') + ' <span class="bad">… (and on, and on)</span>';
+    };
+    $('sparseBtn').onclick = () => {
+      const has = counts.has('vuvuzela');
+      $('sparse').innerHTML = has ? 'vuvuzela …' : '<span class="bad">— no row for “vuvuzela”. The model has never heard the word, so it has nothing to say.</span>';
+    };
+  }
+
+  /* =====================================================================
+     STEP 7 — WHAT'S NEXT (the ladder)
+     ===================================================================== */
+  function stNext(b) {
+    b.innerHTML =
+      '<div class="step-h"><span class="num">07</span> · What’s next</div>' +
+      '<h2 class="title">If one word is too little, look back more</h2>' +
+      '<p class="lede">Every flaw you just saw traces to the same fact: the model sees exactly <b>one</b> word back. The rest of the series is the climb out of that hole, one rung at a time.</p>' +
+      '<div class="ladder">' +
+        '<div class="rung now"><div class="rn">you are here</div><h4>Bigram</h4><p>One word of memory. Loops, drifts, forgets the scorer.</p></div>' +
+        '<div class="rung"><div class="rn">next</div><h4>N-gram</h4><p>Look back 2–3 words. Sounds better — until the table explodes.</p></div>' +
+        '<div class="rung"><div class="rn">then</div><h4>Embeddings</h4><p>Words gain meaning: <i>keeper</i> ≈ <i>goalkeeper</i>.</p></div>' +
+        '<div class="rung"><div class="rn">finally</div><h4>Transformer</h4><p>Every word attends to every other. It would never lose the scorer.</p></div>' +
+      '</div>' +
+      '<p class="lede" style="margin-top:6px">That last idea — attention over the whole sentence — is what finally stops our commentator crediting the wrong team. We get there a rung at a time.</p>' +
+      '<p class="small" style="margin-top:10px">Built by hand for <a href="https://usingo.substack.com" target="_blank" rel="noopener" style="color:var(--accent);border-bottom:1px solid color-mix(in srgb,var(--accent) 35%,transparent)">Learning AI Out Loud</a> — the same question your phone’s keyboard is asking: <i>what usually comes next?</i></p>';
+  }
+
+  /* ---------- step machine ---------- */
+  const STAGES = [
+    { name: 'Tape', render: stTape },
+    { name: 'Pairs', render: stPairs },
+    { name: 'Count', render: stCount },
+    { name: 'Chances', render: stChances },
+    { name: 'Commentate', render: stTalk },
+    { name: 'Where it breaks', render: stFail },
+    { name: "What's next", render: stNext }
+  ];
+  let cur = 0;
+  const rail = $('rail'), backB = $('back'), nextB = $('next'), stepname = $('stepname');
+  function renderRail() {
+    rail.innerHTML = '';
+    STAGES.forEach((s, i) => {
+      const btn = document.createElement('button'); btn.type = 'button';
+      btn.className = (i === cur ? 'cur' : (i < cur ? 'done' : ''));
+      btn.innerHTML = '<span class="n">' + (i + 1) + '</span>' + s.name;
+      if (i === cur) btn.setAttribute('aria-current', 'step');
+      btn.onclick = () => go(i); rail.appendChild(btn);
+    });
+  }
+  function go(i) {
+    cur = Math.max(0, Math.min(STAGES.length - 1, i));
+    renderRail();
+    STAGES[cur].render($('body'));
+    backB.disabled = (cur === 0);
+    nextB.textContent = cur === STAGES.length - 1 ? '↺ Start over' : 'Next →';
+    stepname.textContent = 'Step ' + (cur + 1) + ' of ' + STAGES.length + ' · ' + STAGES[cur].name;
+  }
+  backB.onclick = () => go(cur - 1);
+  nextB.onclick = () => { if (cur === STAGES.length - 1) go(0); else go(cur + 1); };
+
+  // theme flip (in-memory only — no storage)
+  $('theme').onclick = function () {
+    const html = document.documentElement;
+    const sysDark = !window.matchMedia || window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const cur = html.getAttribute('data-force') || (sysDark ? 'dark' : 'light');
+    html.setAttribute('data-force', cur === 'dark' ? 'light' : 'dark');
+  };
+
+  go(0);
+})();
+</script>
+</body>
+</html>
