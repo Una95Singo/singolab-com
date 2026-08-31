@@ -1,57 +1,61 @@
 # Handoff — singolab.com
 
-Status as of this handoff. See `CLAUDE.md` for architecture; this file is the
-prioritized next-steps list for whoever picks the work up.
+Status and open items. See `CLAUDE.md` for architecture.
 
 ## Current state
 
-- The site is **built and working**: Next.js 15 + TypeScript + Tailwind,
-  configured for **static export** (`output: 'export'` → `out/`).
-- Branch: **`build/nextjs-site`** (4 commits). `main` has been created locally from
-  this branch's tip; **neither branch is pushed to `origin` yet** (see step 1).
-- Content is **real** (no placeholders left except the email — see below):
-  - Writing: real *Learning AI Out Loud* posts (EP 1, EP 2, Introduction) link
-    to Substack; **EP 3 is shown as an unpublished work-in-progress teaser**.
-  - Résumé: privacy-conscious, LinkedIn-level — no phone, no personal email, no
-    confidential client detail. Real roles/education.
-- **Visual QA passed** (home light+dark, résumé, 404, signal canvas, theming) —
-  zero console errors.
+The site is **live at [singolab.com](https://singolab.com)**, served by
+Cloudflare Pages from `main` (Next.js 15 static export, `output: 'export'` →
+`out/`). Pushing to `main` deploys.
 
-## Constraints (important)
+The companion project **Robot to Red Light** is live at
+[drive.singolab.com](https://drive.singolab.com) as its *own* Cloudflare Pages
+project, built from
+[Una95Singo/robot-to-red-light](https://github.com/Una95Singo/robot-to-red-light).
+The two deploy independently; this repo only links to it, via `LINKS.studyGuide`
+and `LINKS.studyGuideRepo` in `lib/site.ts`.
 
-- **This repo is public.** Do not commit secrets, the phone number, the personal
-  email, or unpublished draft content. The EP 3 draft and the
-  `bigram-commentator.html` demo are intentionally **not** in the repo.
-- Cloudflare auth must be done by the owner locally (`npx wrangler login`) so
-  credentials never enter the repo.
+The Projects section holds two entries — the *Learning AI Out Loud* series (in
+progress) and the study guide (shipped). The two placeholder cards that used to
+sit below them, "Signal" and "The demos", have been removed.
+
+The Writing section lists all seven Substack posts, newest first.
+
+## Open items
+
+1. **Email.** `lib/site.ts` `EMAIL` is still the `hello@singolab.com`
+   placeholder. It is the single source of truth and flows into the footer, the
+   résumé and the JSON-LD, so swapping it is a one-line change once a real
+   address exists.
+
+2. **The "Now" section is stale.** `Now.tsx` reads *Updated Jun 2026* and talks
+   about finishing the next episode — but EP 3 published on 9 Jun 2026, and
+   three more posts have gone up since. It needs the owner's own words, not a
+   guess, and then the date bumped to match.
+
+3. **The résumé may be behind.** The 1 Aug 2026 post announces a promotion to
+   Principal at BCG. Worth checking `app/resume/page.tsx` reflects that.
+
+## Keeping the writing list current
+
+`Writing.tsx` hand-maintains a copy of the Substack archive. Take titles, dates
+and URLs from the source rather than memory:
+
+```
+curl -s "https://usingo.substack.com/api/v1/archive?sort=new&limit=30" \
+  | python3 -c "import json,sys; [print(p['post_date'][:10], '|', p['title'], '|', p['canonical_url']) for p in json.load(sys.stdin)]"
+```
+
+`Post.wip` renders a row as an unlinked "Draft" teaser — used when a post is
+written but not yet published.
+
+## Constraints
+
+- **This repo is public.** No secrets, no phone number, no personal email, no
+  unpublished draft content.
+- Cloudflare auth is the owner's to do locally, so credentials never enter the
+  repo.
 - Work on a branch; commit only when asked; no force-push to `main`.
-
-## Next steps (prioritized)
-
-1. **Push `main` to `origin`.** `main` already exists locally (created from
-   `build/nextjs-site`) and should be the source of truth Cloudflare builds from.
-   Pushing needs the owner's machine: GitHub SSH must be trusted first
-   (`git ls-remote origin` currently fails with "Host key verification failed").
-   Run `ssh -T git@github.com` once to add the host key, then
-   `git push -u origin main` (and optionally push `build/nextjs-site`).
-
-2. **Deploy to Cloudflare Pages** (domain `singolab.com` already purchased there).
-   - Framework preset: Next.js (Static HTML Export). Build command: `next build`.
-     Build output directory: `out`.
-   - No server runtime / no env vars required.
-   - `public/robots.txt`, `sitemap.xml`, `og-image.png`, favicons already in place.
-   - Point the apex domain at the Pages project; verify HTTPS + the custom domain.
-
-3. **Content to finalize** (owner provides the real values):
-   - **Email:** `hello@singolab.com` is still a placeholder — swap in the real
-     address in `lib/site.ts` (`EMAIL`) once it exists. Single source of truth.
-   - **Publish EP 3:** when live, flip its row in `app/components/Writing.tsx`
-     from the `wip` teaser to a real linked post, and host the interactive
-     `bigram-commentator.html` demo (owner has the file) at e.g.
-     `public/demos/bigram-commentator/index.html` →
-     `singolab.com/demos/bigram-commentator` so the post can embed it.
-   - **Verify SoundCloud URL** (`lib/site.ts` `LINKS.soundcloud`) — couldn't load
-     the page to confirm during build.
 
 ## Build / run reference
 
@@ -61,5 +65,5 @@ npm run dev      # local dev at http://localhost:3000
 npm run build    # static export to out/
 ```
 
-Note: Node is via Homebrew; if `node`/`npm` aren't found, prefix with
+Node is via Homebrew; if `node`/`npm` aren't found, prefix with
 `export PATH="/opt/homebrew/bin:$PATH"`.

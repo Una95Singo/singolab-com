@@ -31,6 +31,15 @@ public/               # og-image.png, favicons, robots.txt, sitemap.xml (absolut
 design_handoff_singolab_site/   # original prototype + design spec (reference only)
 ```
 
+### Companion repo
+
+**Robot to Red Light** (`../robot-to-red-light`,
+[github.com/Una95Singo/robot-to-red-light](https://github.com/Una95Singo/robot-to-red-light))
+is a separate project: a NY permit-test study guide, Vite + React + TS, deployed
+as its **own Cloudflare Pages project** at `drive.singolab.com`. This repo only
+links to it — from the Projects section, via `LINKS.studyGuide` in `lib/site.ts`.
+The two deploy independently; nothing is shared but the domain and the link.
+
 Routes: `/` (home), `/resume`, `not-found`. The signal is a `'use client'` component (`HeroSignal.tsx`) wrapping `<canvas>`; `Masthead.tsx` and `Reveal.tsx` are also client components.
 
 ## Commands
@@ -59,10 +68,9 @@ Node is via Homebrew; if `node`/`npm` aren't found, prefix with `export PATH="/o
 ## Content still to finalize (see HANDOFF.md)
 
 - **Email:** `lib/site.ts` `EMAIL` is still the `hello@singolab.com` placeholder — swap in the real address once it exists (single source of truth; flows into footer, résumé, and JSON-LD).
-- **EP 3:** shown as an unpublished work-in-progress teaser in `Writing.tsx`; flip it to a real linked post when live (and host the `bigram-commentator.html` demo under `public/demos/`).
-- **"Now" date** (`Now.tsx`) should be kept current.
-- **Verify** the SoundCloud URL in `lib/site.ts`.
+- **"Now" section** (`Now.tsx`) still says *Updated Jun 2026* and describes finishing EP 3, which published on 9 Jun 2026. Both the date and the paragraph need the owner's words.
+- **Writing list** (`Writing.tsx`) is a hand-maintained copy of the Substack archive. When a post goes up, add a row — titles, dates and links should be taken from `usingo.substack.com/api/v1/archive?sort=new`, not written from memory.
 
 ## This repo is public
 
-Do not commit secrets, the phone number, the personal email, or unpublished draft content. The EP 3 draft and `bigram-commentator.html` demo are intentionally **not** in the repo. Work on a branch; commit only when asked.
+Do not commit secrets, the phone number, the personal email, or unpublished draft content. Work on a branch; commit only when asked.
