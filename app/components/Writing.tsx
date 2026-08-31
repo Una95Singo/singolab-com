@@ -1,25 +1,39 @@
 import { LINKS } from '@/lib/site';
 
-// Real posts from "Learning AI Out Loud" (usingo.substack.com). Numbered in
-// publication order; the archive link covers the rest.
-// EP 3 is an unpublished work-in-progress — shown as a teaser, not linked, and
-// its draft text is intentionally kept out of this (public) repo.
+// Real posts from usingo.substack.com, newest first, numbered in publication
+// order. Titles, dates and links are taken from the Substack archive itself;
+// deks are the post subtitles where one exists.
 type Post = {
   num: string;
   title: string;
   dek: string;
   meta: string;
   href?: string;
+  /** unpublished draft: shown as a teaser, not linked */
   wip?: boolean;
 };
 
 const POSTS: Post[] = [
   {
+    num: 'Nº 07',
+    title: 'Remembering why we dared to dream big',
+    dek: 'On making Principal at BCG, and the people who made it thinkable.',
+    meta: 'Aug 2026',
+    href: 'https://usingo.substack.com/p/remembering-why-we-dared-to-dream',
+  },
+  {
+    num: 'Nº 06',
+    title: 'The Summer of AI',
+    dek: '…and it’s an extremely hot season.',
+    meta: 'Jul 2026',
+    href: 'https://usingo.substack.com/p/the-summer-of-ai',
+  },
+  {
     num: 'Nº 05',
     title: 'Learning AI Out Loud, EP 3: Goal for All Africa',
-    dek: 'The simplest ancestor of the machine you talk to — built from scratch, and explained by a World Cup that’s repeating itself.',
-    meta: 'In progress · Jun 2026',
-    wip: true,
+    dek: 'The simplest ancestor of the large language model, built from scratch and explained by a World Cup that is repeating itself.',
+    meta: 'Jun 2026',
+    href: 'https://usingo.substack.com/p/learning-ai-out-loud-ep-3-goal-for',
   },
   {
     num: 'Nº 04',
@@ -41,6 +55,13 @@ const POSTS: Post[] = [
     dek: 'Demystifying language models for the curious — no technical background required.',
     meta: 'Apr 2026',
     href: 'https://usingo.substack.com/p/learning-ai-out-loud-an-introduction',
+  },
+  {
+    num: 'Nº 01',
+    title: 'AI Alignment Is Probabilistic. The Consequences Aren’t',
+    dek: 'No one has a crystal ball.',
+    meta: 'Mar 2026',
+    href: 'https://usingo.substack.com/p/ai-alignment-is-probabilistic-the',
   },
 ];
 
@@ -83,7 +104,8 @@ export default function Writing() {
         <div className="sec-kick reveal">
           <span className="num">01</span> — Latest writing
           <span className="lede">
-            From <i>Learning AI Out Loud</i>, my Substack.
+            My Substack — the <i>Learning AI Out Loud</i> series, and
+            everything else.
           </span>
         </div>
         <div>

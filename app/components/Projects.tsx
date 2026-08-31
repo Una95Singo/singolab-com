@@ -57,39 +57,57 @@ export default function Projects() {
             </div>
           </div>
 
-          <div className="grid2">
-            <a className="xcard reveal" href="#top">
-              <div className="xtop">
-                <h4>Signal</h4>
-                <span className="xstatus">shipped</span>
+          <div className="feature reveal">
+            <div className="fbody">
+              <div className="statusrow">
+                <span className="pill">shipped</span>
+                <span className="feature-label">A STUDY GUIDE, LIVE</span>
               </div>
-              <p>
-                The generative mark on this page — an audio waveform that resolves
-                into a portrait, a skyline, or an oscilloscope figure. New every
-                visit.
+              <h3>Robot to Red Light</h3>
+              <p className="desc">
+                A New York permit-test guide for drivers trained on South
+                African roads. Most apps teach the manual from zero; this one
+                assumes you can already drive, and treats the real problem as
+                interference rather than ignorance. Every rule arrives as a
+                bridge from a habit you already own — and says plainly
+                whether that habit survives the crossing.
               </p>
               <div className="tags">
-                <span className="tag">Canvas</span>
-                <span className="tag">JavaScript</span>
-                <span className="tag">parametric</span>
+                <span className="tag">React</span>
+                <span className="tag">TypeScript</span>
+                <span className="tag">SVG</span>
+                <span className="tag">hand-drawn</span>
               </div>
-            </a>
-            <a className="xcard reveal" href="#writing">
-              <div className="xtop">
-                <h4>The demos</h4>
-                <span className="xstatus">tinkering</span>
+              <div className="flinks">
+                <a href={LINKS.studyGuide} target="_blank" rel="noreferrer">
+                  Open the guide <span className="arrow">↗</span>
+                </a>
+                <a href={LINKS.studyGuideRepo} target="_blank" rel="noreferrer">
+                  Source on GitHub <span className="arrow">↗</span>
+                </a>
               </div>
-              <p>
-                Small interactive toys that ship with the writing — assemble a
-                model one step at a time and watch it work, then watch it break.
-                Built to be clicked, not just read.
-              </p>
-              <div className="tags">
-                <span className="tag">HTML</span>
-                <span className="tag">Canvas</span>
-                <span className="tag">JavaScript</span>
-              </div>
-            </a>
+            </div>
+            <div className="fside">
+              <div className="codeterm-head">the four verdicts</div>
+              <ul className="verdicts">
+                <li>
+                  <span className="vk vk-same" aria-hidden="true" /> same rule
+                  — trust it
+                </li>
+                <li>
+                  <span className="vk vk-mirror" aria-hidden="true" /> mirrored
+                  — flip it
+                </li>
+                <li>
+                  <span className="vk vk-rewire" aria-hidden="true" /> rewired
+                  — override it
+                </li>
+                <li>
+                  <span className="vk vk-new" aria-hidden="true" /> no SA
+                  version — learn it
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
