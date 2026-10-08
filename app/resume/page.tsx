@@ -32,7 +32,7 @@ export default function Resume() {
         <div className="head">
           <h1>Unarine Singo</h1>
           <p className="role">
-            Strategy and technology consultant — currently a Project Leader at the
+            Strategy and technology consultant — currently a Principal at the
             Boston Consulting Group in New York, with a background in data science
             and statistical finance. Re-skilling into AI engineering, and writing
             about it in public.
@@ -118,14 +118,14 @@ export default function Resume() {
                   <span className="ititle">The Boston Consulting Group</span>
                   <span className="when">2020 — Present</span>
                 </div>
-                <div className="org">Project Leader · New York &amp; Johannesburg</div>
+                <div className="org">Principal · New York &amp; Johannesburg</div>
                 <ul>
                   <li>
                     Strategy, technology, and operations work for clients across
                     utilities, energy, financial services, and private equity.
                   </li>
                   <li>
-                    Progressed from Associate Consultant to Project Leader; now
+                    Progressed from Associate Consultant to Principal; now
                     leading large-scale technology and AI-enabled transformation
                     programs.
                   </li>
